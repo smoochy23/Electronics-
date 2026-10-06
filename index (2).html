@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electronics Store</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--ink:#111a22;--mut:#5d6872;--line:#d9ddd8;--acc:#0a4dff;--onacc:#fff;--hi:#ffd23f;--bad:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e141a;--card:#17202a;--ink:#eef1f4;--mut:#9aa6b2;--line:#2a3541;--acc:#6b95ff;--onacc:#0e141a;--bad:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0e141a;--card:#17202a;--ink:#eef1f4;--mut:#9aa6b2;--line:#2a3541;--acc:#6b95ff;--onacc:#0e141a;--bad:#ff8a80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:.6rem;align-items:center;padding:.7rem 1rem;background:var(--ink);color:var(--bg)}
+.top .logo{font-weight:800;font-size:1.25rem;cursor:pointer;white-space:nowrap}
+.top input{flex:1;min-width:0;padding:.55rem .8rem;border-radius:8px;border:0;background:var(--bg);color:var(--ink)}
+.top button{background:var(--hi);color:#111;border:0;border-radius:8px;padding:.5rem .8rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.top #adm{background:transparent;color:var(--bg);border:1px solid var(--mut)}
+main{max-width:1000px;margin:0 auto;padding:1rem}
+h1{font-size:clamp(1.6rem,5vw,2.4rem);margin:.4rem 0;line-height:1.1;font-weight:800}
+h2{margin:.2rem 0 .8rem;font-size:1.3rem}
+.sub{color:var(--mut);margin:0 0 1rem}
+.chips{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:.8rem}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:.35rem .9rem;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.8rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.pic{aspect-ratio:1;background:var(--line);display:grid;place-items:center;font-size:3.2rem;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:cover}
+.body{padding:.7rem;display:flex;flex-direction:column;gap:.25rem;flex:1}
+.name{font-weight:600}
+.price{font-weight:800;font-size:1.1rem}
+.desc{color:var(--mut);font-size:.85rem}
+.btn{background:var(--acc);color:var(--onacc);border:0;border-radius:8px;padding:.6rem 1rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.bad{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.body .btn{margin-top:auto}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:.8rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.row .pic{width:64px;height:64px;font-size:1.8rem;border-radius:8px;flex:none;aspect-ratio:auto}
+.row .grow{flex:1;min-width:0}
+.qty{display:flex;align-items:center;gap:.4rem}
+.qty button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.tot{display:flex;justify-content:space-between;padding:.2rem 0}
+.tot.big{font-weight:800;font-size:1.2rem;border-top:1px solid var(--line);margin-top:.4rem;padding-top:.6rem}
+label{display:block;font-weight:600;font-size:.9rem;margin:.7rem 0 .2rem}
+input,select,textarea{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.opt{display:flex;gap:.6rem;align-items:flex-start;padding:.6rem;border:1px solid var(--line);border-radius:8px;margin-top:.5rem;font-weight:400}
+.opt input{width:auto;margin-top:.25rem}
+.note{background:var(--hi);color:#111;border-radius:8px;padding:.7rem .9rem;margin:.8rem 0}
+.empty{text-align:center;color:var(--mut);padding:2rem 0}
+.acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+.tag{font-size:.8rem;color:var(--bad);font-weight:600}
+footer{max-width:1000px;margin:1rem auto 2rem;padding:1rem;color:var(--mut);font-size:.9rem;border-top:1px solid var(--line)}
+footer a{color:var(--acc);font-weight:600}
+.link{background:none;border:0;color:var(--acc);cursor:pointer;padding:0;text-decoration:underline}
+
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.admin-img{width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.admin-product{display:flex;gap:.8rem;align-items:center}
+.small-btn{padding:.45rem .7rem;font-size:.85rem}
+
+</head>
+<body>
+<header class="top">
+  <span class="logo" id="shop" data-act="home" tabindex="0"></span>
+  <input id="search" type="search" placeholder="Search products" aria-label="Search products">
+  <button data-act="cart" aria-label="Open cart">Cart <span id="cc"></span></button>
+  <button id="adm" data-act="admin" hidden>Manage</button>
+</header>
+<main id="app"></main>
+<footer>
+  <div>Customer care: <a id="tel" href="#"></a></div>
+  <div><button class="link" data-act="orders">My orders</button></div>
+</footer>
+
+<script type="application/json" id="data">{"name":"My Electronics","tagline":"Phones, audio and accessories delivered to your door.","cur":"KSh","fee":300,"phone":"0111909865","paybill":"542542","acct":"02308979546150","next":5,"products":[{"id":1,"name":"Smartphone 128GB","price":18500,"cat":"Phones","stock":5,"desc":"Sample item. Edit or delete me in Manage.","img":"","icon":"📱"},{"id":2,"name":"Wireless Earbuds","price":2800,"cat":"Audio","stock":12,"desc":"Sample item. Bluetooth, charging case.","img":"","icon":"🎧"},{"id":3,"name":"Smart Watch","price":4500,"cat":"Wearables","stock":7,"desc":"Sample item. Heart-rate and sleep tracking.","img":"","icon":"⌚"},{"id":4,"name":"20,000mAh Power Bank","price":2200,"cat":"Accessories","stock":0,"desc":"Sample item. Fast charging.","img":"","icon":"🔋"}]}</script>
+
+<script>
+/* ===== SUPABASE CONFIG =====
+   Replace the two values below with your Supabase Project URL and anon/publishable key.
+   NEVER put a service_role/secret key in this file.
+*/
+const CONFIG={
+  SUPABASE_URL:"PASTE_YOUR_SUPABASE_PROJECT_URL_HERE",
+  SUPABASE_ANON_KEY:"PASTE_YOUR_SUPABASE_ANON_KEY_HERE"
+};
+const sb=(CONFIG.SUPABASE_URL.startsWith("http") && !CONFIG.SUPABASE_ANON_KEY.startsWith("PASTE_"))
+  ?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;
+
+let D=JSON.parse(document.getElementById('data').textContent);
+let dbProducts=[];
+let productsLoaded=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let cart=load('cart',{}),orders=load('orders',[]),view='shop',q='',cat='All',isOwner=false,editing=null,imgData='',lastOrder=null,pay='send',adminOrders=[];
+const money=n=>D.cur+' '+Number(n||0).toLocaleString();
+const productList=()=>productsLoaded?dbProducts:D.products;
+const prod=id=>productList().find(p=>p.id==id);
+const lines=()=>Object.keys(cart).map(id=>({p:prod(id),n:cart[id]})).filter(l=>l.p&&l.n>0);
+const sub=()=>lines().reduce((s,l)=>s+l.p.price*l.n,0);
+const count=()=>lines().reduce((s,l)=>s+l.n,0);
+const pic=p=>`<div class="pic">${p.img?`<img src="${esc(p.img)}" alt="${esc(p.name)}">`:esc(p.icon||'📦')}</div>`;
+const configured=()=>!!sb;
+
+function go(v){view=v;render();window.scrollTo(0,0)}
+function render(){
+  $('#shop').textContent=D.name;document.title=D.name;
+  const t=$('#tel');t.textContent=D.phone;t.href='tel:'+D.phone;
+  $('#cc').textContent=count()?'('+count()+')':'';
+  $('#adm').hidden=!isOwner;
+  $('#app').innerHTML={shop:shopV,cart:cartV,checkout:checkV,done:doneV,orders:ordersV,admin:adminV}[view]();
+}
+function shopV(){
+  const products=productList();
+  const cats=['All',...new Set(products.map(p=>p.cat).filter(Boolean))];
+  const list=products.filter(p=>(cat==='All'||p.cat===cat)&&(p.name+' '+(p.desc||'')).toLowerCase().includes(q.toLowerCase()));
+  return `<h1>${esc(D.name)}</h1><p class="sub">${esc(D.tagline)}</p>
+  <div class="chips">${cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-act="cat" data-v="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+  ${list.length?`<div class="grid">${list.map(p=>`<div class="card">${pic(p)}<div class="body"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div><div class="desc">${esc(p.desc)}</div>${p.stock>0?`<button class="btn" data-act="add" data-id="${p.id}">Add to cart</button>`:`<span class="tag">Sold out</span>`}</div></div>`).join('')}</div>`:`<div class="empty">No products match.</div>`}`;
+}
+function cartV(){
+  const L=lines();
+  if(!L.length)return `<h2>Your cart</h2><div class="empty">Your cart is empty.<div class="acts" style="justify-content:center"><button class="btn" data-act="home">Browse products</button></div></div>`;
+  return `<h2>Your cart</h2><div class="panel">${L.map(l=>`<div class="row">${pic(l.p)}<div class="grow"><div class="name">${esc(l.p.name)}</div><div>${money(l.p.price)}</div><button class="link" data-act="rm" data-id="${l.p.id}">Remove</button></div><div class="qty"><button data-act="dec" data-id="${l.p.id}">−</button><span>${l.n}</span><button data-act="add" data-id="${l.p.id}">+</button></div></div>`).join('')}
+  <div class="tot"><span>Items</span><span>${money(sub())}</span></div><div class="tot"><span>Delivery</span><span>${money(D.fee)}</span></div><div class="tot big"><span>Total</span><span>${money(sub()+Number(D.fee))}</span></div></div>
+  <div class="acts"><button class="btn" data-act="checkout">Checkout</button><button class="btn alt" data-act="home">Keep shopping</button></div>`;
+}
+function checkV(){
+  if(!lines().length)return cartV();
+  return `<h2>Checkout</h2>${!configured()?`<div class="note">Online database is not configured yet. The owner must add the Supabase URL and anon/publishable key.</div>`:''}
+  <form id="co" class="panel">
+  <label for="n">Full name</label><input id="n" name="name" required autocomplete="name">
+  <label for="p">Phone number</label><input id="p" name="phone" type="tel" required autocomplete="tel">
+  <label for="a">Delivery address</label><textarea id="a" name="addr" rows="3" required placeholder="Town, street, building, landmark"></textarea>
+  <label for="no">Note (optional)</label><input id="no" name="note">
+  <label>Payment</label>
+  <label class="opt"><input type="radio" name="pay" value="send" ${pay==='send'?'checked':''}><span>Pay now by M-Pesa Paybill</span></label>
+  <label class="opt"><input type="radio" name="pay" value="delivery" ${pay==='delivery'?'checked':''}><span>Pay on delivery</span></label>
+  <div id="payinfo" class="note" ${pay==='send'?'':'hidden'}>
+   <b>How to pay</b><br>M-Pesa menu, Lipa na M-Pesa, Pay Bill.<br>Business no: <b>${esc(D.paybill)}</b><br>Account no: <b>${esc(D.acct)}</b><br>Amount: <b>${money(sub()+Number(D.fee))}</b><br>Enter the M-Pesa confirmation code:
+   <input name="code" maxlength="10" placeholder="e.g. SJK1A2B3C4" autocapitalize="characters" style="margin-top:.4rem;text-transform:uppercase">
+  </div>
+  <div class="tot big"><span>Total</span><span>${money(sub()+Number(D.fee))}</span></div>
+  <div class="acts"><button class="btn" type="submit" ${configured()?'':'disabled'}>Place order</button><button class="btn alt" type="button" data-act="cart">Back to cart</button></div></form>`;
+}
+function summary(o){
+  return `Order ${o.id}\n`+o.items.map(i=>`${i.n} x ${i.name} (${money(i.price)})`).join('\n')+
+  `\nDelivery: ${money(o.fee)}\nTotal: ${money(o.total)}\nName: ${o.name}\nPhone: ${o.phone}\nAddress: ${o.addr}`+
+  (o.note?`\nNote: ${o.note}`:'')+
+  `\nPayment: ${o.pay==='send'?'M-Pesa Paybill '+D.paybill+', account '+D.acct+', code '+o.code:'on delivery'}`;
+}
+function doneV(){
+  const o=lastOrder;if(!o)return shopV();
+  const wa=D.phone.replace(/^0/,'254');
+  return `<h2>Order ${esc(o.id)} received</h2>
+  <div class="note"><b>Your order is now saved online.</b> The owner can see it in Manage without waiting for an SMS.</div>
+  <div class="panel"><pre style="white-space:pre-wrap;margin:0;font:inherit">${esc(summary(o))}</pre></div>
+  ${o.pay==='send'?`<div class="note">Payment code <b>${esc(o.code)}</b> is recorded for the owner to verify.</div>`:''}
+  <div class="acts">
+   <a class="btn" href="sms:${esc(D.phone)}?&body=${encodeURIComponent(summary(o))}">Send order by SMS</a>
+   <a class="btn" href="https://wa.me/${wa}?text=${encodeURIComponent(summary(o))}" target="_blank" rel="noopener">WhatsApp</a>
+   <a class="btn alt" href="tel:${esc(D.phone)}">Call customer care</a>
+   <button class="btn alt" data-act="copy">Copy order</button>
+   <button class="btn alt" data-act="home">Continue shopping</button>
+  </div>`;
+}
+function ordersV(){
+  return `<h2>My orders</h2><p class="sub">Orders are stored online; this device keeps a quick local history.</p>`+
+  (orders.length?orders.map(o=>`<div class="panel"><b>${esc(o.id)}</b> · ${esc(o.date||'')}<br>${o.items.map(i=>esc(i.n+' x '+i.name)).join(', ')}<br><b>${money(o.total)}</b><div class="acts"><button class="btn alt" data-act="view" data-id="${esc(o.id)}">View</button></div></div>`).join(''):'<div class="empty">No orders yet.</div>');
+}
+function adminV(){
+  if(!isOwner)return `<h2>Owner login</h2><form id="login" class="panel">
+    <label>Email</label><input name="email" type="email" required>
+    <label>Password</label><input name="password" type="password" required>
+    <div class="acts"><button class="btn">Sign in</button></div></form>`;
+
+  const products=productList();
+  return `<h2>Owner dashboard</h2>
+  <p class="sub">Manage orders, products, prices, stock and product photos from here.</p>
+
+  <div class="acts">
+    <button class="btn" data-act="refreshOrders">Refresh orders</button>
+    <button class="btn alt" data-act="refreshProducts">Refresh products</button>
+    <button class="btn alt" data-act="newProduct">Add product</button>
+    <button class="btn alt" data-act="logout">Sign out</button>
+  </div>
+
+  <div class="panel">
+    <h2>Orders (${adminOrders.length})</h2>
+    ${adminOrders.length?adminOrders.map(o=>`<div class="panel">
+      <b>${esc(o.id)}</b> · <b>${esc(o.status)}</b><br>
+      <span class="desc">${esc(new Date(o.created_at).toLocaleString())}</span>
+      <p><b>${esc(o.name)}</b> · ${esc(o.phone)}<br>${esc(o.address)}${o.note?'<br>Note: '+esc(o.note):''}</p>
+      <p>${o.items.map(i=>`${i.n} × ${esc(i.name)} — ${money(i.price)}`).join('<br>')}</p>
+      <p><b>Total: ${money(o.total)}</b><br>
+      Payment: ${o.payment_method==='mpesa'?'M-Pesa':'Pay on delivery'}
+      ${o.mpesa_code?`<br>M-Pesa code: <b>${esc(o.mpesa_code)}</b>`:''}</p>
+      <div class="acts">
+        <select data-status-id="${esc(o.id)}">
+          <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+          <option value="paid" ${o.status==='paid'?'selected':''}>Paid</option>
+          <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select>
+        <button class="btn" data-act="status" data-id="${esc(o.id)}">Update status</button>
+      </div>
+    </div>`).join(''):'<div class="empty">No orders yet.</div>'}
+  </div>
+
+  <div class="panel">
+    <h2>Products (${products.length})</h2>
+    <div class="grid">
+      ${products.map(p=>`<div class="card">
+        <div class="pic">${p.img?`<img src="${esc(p.img)}" alt="${esc(p.name)}">`:esc(p.icon||'📦')}</div>
+        <div class="body">
+          <div class="name">${esc(p.name)}</div>
+          <div class="price">${money(p.price)}</div>
+          <div class="desc">${esc(p.cat||'')} · Stock: ${p.stock}</div>
+          <div class="acts">
+            <button class="btn small-btn" data-act="editProduct" data-id="${esc(p.id)}">Edit</button>
+            <button class="btn bad small-btn" data-act="deleteProduct" data-id="${esc(p.id)}">Delete</button>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div id="productEditor"></div>`;
+}
+
+function productEditor(product=null){
+  const p=product||{id:'',name:'',price:'',cat:'',stock:0,desc:'',icon:'📦',img:''};
+  return `<div class="panel">
+    <h2>${product?'Edit product':'Add product'}</h2>
+    <form id="productForm">
+      <input type="hidden" name="id" value="${esc(p.id)}">
+      <label>Product name</label><input name="name" required value="${esc(p.name)}">
+      <label>Price</label><input name="price" type="number" min="0" required value="${esc(p.price)}">
+      <label>Category</label><input name="cat" value="${esc(p.cat||'')}">
+      <label>Stock quantity</label><input name="stock" type="number" min="0" required value="${esc(p.stock||0)}">
+      <label>Description</label><textarea name="desc" rows="3">${esc(p.desc||'')}</textarea>
+      <label>Fallback icon</label><input name="icon" value="${esc(p.icon||'📦')}">
+      <label>Product photo URL</label>
+      <input name="img" type="url" value="${esc(p.img||'')}" placeholder="https://...">
+      <p class="desc">For now, paste a public image URL. A later upgrade can use Supabase Storage for direct photo uploads.</p>
+      <div class="acts">
+        <button class="btn" type="submit">Save product</button>
+        <button class="btn alt" type="button" data-act="closeEditor">Cancel</button>
+      </div>
+    </form>
+  </div>`;
+}
+
+async function loadProducts(){
+  if(!sb)return;
+  const {data,error}=await sb.from('products').select('*').order('id');
+  if(error){alert(error.message);return}
+  if(data&&data.length){dbProducts=data;productsLoaded=true;}
+  else if(isOwner){await seedProductsIfNeeded();}
+  render();
+}
+async function seedProductsIfNeeded(){
+  const {data,error}=await sb.from('products').select('id').limit(1);
+  if(error)return;
+  if(data&&data.length)return;
+  const rows=D.products.map(p=>({
+    id:p.id,name:p.name,price:p.price,cat:p.cat||'',stock:p.stock||0,
+    desc:p.desc||'',icon:p.icon||'📦',img:p.img||''
+  }));
+  const r=await sb.from('products').insert(rows);
+  if(r.error)alert('Could not create starter products: '+r.error.message);
+  else{
+    const q=await sb.from('products').select('*').order('id');
+    dbProducts=q.data||[];productsLoaded=true;
+  }
+}
+async function saveProduct(fd){
+  const id=fd.get('id');
+  const row={
+    name:fd.get('name'),price:Number(fd.get('price')||0),cat:fd.get('cat')||'',
+    stock:Number(fd.get('stock')||0),desc:fd.get('desc')||'',
+    icon:fd.get('icon')||'📦',img:fd.get('img')||''
+  };
+  let result;
+  if(id)result=await sb.from('products').update(row).eq('id',id);
+  else{
+    const next=Math.max(0,...productList().map(p=>Number(p.id)||0))+1;
+    result=await sb.from('products').insert({...row,id:next});
+  }
+  if(result.error){alert(result.error.message);return}
+  await loadProducts();
+  $('#productEditor').innerHTML='';
+}
+async function deleteProduct(id){
+  if(!confirm('Delete this product?'))return;
+  const {error}=await sb.from('products').delete().eq('id',id);
+  if(error){alert(error.message);return}
+  delete cart[id];save('cart',cart);
+  await loadProducts();
+}
+
+async function loadAdminOrders(){
+  if(!sb||!isOwner)return;
+  const {data,error}=await sb.from('orders').select('*').order('created_at',{ascending:false});
+  if(error){alert(error.message);return}
+  adminOrders=data||[];render();
+}
+document.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act,id=b.dataset.id;
+  if(act==='home')go('shop');
+  else if(act==='cart')go('cart');
+  else if(act==='orders')go('orders');
+  else if(act==='admin'){view='admin';render();if(isOwner)loadAdminOrders()}
+  else if(act==='cat'){cat=b.dataset.v;render()}
+  else if(act==='add'){const p=prod(id);if((cart[id]||0)<p.stock){cart[id]=(cart[id]||0)+1;save('cart',cart);render()}else alert('Only '+p.stock+' in stock.')}
+  else if(act==='dec'){cart[id]=(cart[id]||0)-1;if(cart[id]<=0)delete cart[id];save('cart',cart);render()}
+  else if(act==='rm'){delete cart[id];save('cart',cart);render()}
+  else if(act==='checkout')go('checkout');
+  else if(act==='view'){lastOrder=orders.find(o=>o.id===id);go('done')}
+  else if(act==='copy'){try{await navigator.clipboard.writeText(summary(lastOrder));b.textContent='Copied'}catch(e){alert('Copy failed. Select the order text and copy it.')}}
+  else if(act==='refreshOrders')loadAdminOrders();
+  else if(act==='refreshProducts')loadProducts();
+  else if(act==='newProduct'){const e=$('#productEditor');if(e)e.innerHTML=productEditor();window.scrollTo(0,document.body.scrollHeight)}
+  else if(act==='editProduct'){const p=prod(id);const e=$('#productEditor');if(e)e.innerHTML=productEditor(p);window.scrollTo(0,document.body.scrollHeight)}
+  else if(act==='deleteProduct')deleteProduct(id);
+  else if(act==='closeEditor'){const e=$('#productEditor');if(e)e.innerHTML='';}
+  else if(act==='logout'){if(sb)await sb.auth.signOut();isOwner=false;adminOrders=[];go('shop')}
+  else if(act==='status'){
+    const select=document.querySelector(`select[data-status-id="${CSS.escape(id)}"]`);
+    const {error}=await sb.from('orders').update({status:select.value}).eq('id',id);
+    if(error)alert(error.message);else loadAdminOrders();
+  }
+});
+document.addEventListener('change',e=>{
+  if(e.target.name==='pay'){pay=e.target.value;const pi=$('#payinfo');if(pi)pi.hidden=pay!=='send'}
+});
+document.addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  const f=ev.target,fd=new FormData(f);
+  if(f.id==='login'){
+    if(!sb){alert('Supabase is not configured.');return}
+    const {data,error}=await sb.auth.signInWithPassword({email:fd.get('email'),password:fd.get('password')});
+    if(error){alert(error.message);return}
+    isOwner=true;window.ownerEmail=data.user.email;view='admin';await loadAdminOrders();
+    return;
+  }
+  if(f.id==='productForm'){
+    if(!sb||!isOwner)return;
+    await saveProduct(fd);return;
+  }
+  if(f.id==='co'){
+    if(!configured())return;
+    pay=fd.get('pay');const L=lines();const code=(fd.get('code')||'').trim().toUpperCase();
+    if(pay==='send'&&!/^[A-Z0-9]{10}$/.test(code)){alert('Enter the 10-character M-Pesa confirmation code, or choose Pay on delivery.');return}
+    const order={
+      id:'ORD-'+Date.now().toString(36).toUpperCase(),
+      items:L.map(l=>({n:l.n,name:l.p.name,price:l.p.price})),
+      fee:Number(D.fee),total:sub()+Number(D.fee),name:fd.get('name'),phone:fd.get('phone'),
+      address:fd.get('addr'),note:fd.get('note')||'',payment_method:pay==='send'?'mpesa':'delivery',
+      mpesa_code:pay==='send'?code:null,status:'pending'
+    };
+    const {data,error}=await sb.from('orders').insert(order).select().single();
+    if(error){alert('Could not save order: '+error.message);return}
+    const saved={...data,addr:data.address,pay:data.payment_method==='mpesa'?'send':'delivery',code:data.mpesa_code,date:new Date(data.created_at).toLocaleString()};
+    orders.unshift(saved);save('orders',orders);lastOrder=saved;cart={};save('cart',cart);go('done');
+  }
+});
+$('#search').addEventListener('input',e=>{q=e.target.value;if(view!=='shop')view='shop';render()});
+$('#shop').addEventListener('keydown',e=>{if(e.key==='Enter')go('shop')});
+(async()=>{
+  if(sb){
+    const {data}=await sb.auth.getSession();
+    if(data.session){isOwner=true;window.ownerEmail=data.session.user.email}
+    sb.auth.onAuthStateChange((_event,session)=>{
+      isOwner=!!session;
+      window.ownerEmail=session?.user?.email||'';
+      if(view==='admin'){render();if(isOwner){loadAdminOrders();loadProducts()}}else render();
+    });
+  }
+  render();
+  if(sb)loadProducts();
+})();
+</script>
+</body>
+</html>
